@@ -1,0 +1,91 @@
+spring:
+  application:
+    name: egg
+  main:
+    banner-mode: off
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/egg?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 10
+      idle-timeout: 30000
+      max-lifetime: 120000
+      keepalive-time: 30000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+      auto-commit: true
+      pool-name: HikariCP
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      database: 0
+      password: 123456
+      timeout: 30000
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1
+          max-idle: 8
+          min-idle: 0
+  #  servlet:
+  #    multipart:
+  #      max-file-size: 10MB
+  #      max-request-size: 100MB
+  #  mvc:
+  #    pathmatch:
+  #      matching-strategy: ant_path_matcher
+
+logging:
+  charset:
+    console: utf-8
+  pattern:
+    console: '%red(%d{HH:mm:ss}) %green([%thread]) %highlight(%-5level) %boldMagenta(%logger%n) - %msg%n'
+  level:
+    root: info
+
+mybatis-flex:
+  global-config:
+    print-banner: off
+    logic-delete-column: is_deleted
+    deleted-value-of-logic-delete: true
+    normal-value-of-logic-delete: false
+
+decorator:
+  datasource:
+    p6spy:
+      log-format: '%(sqlSingleLine)'
+
+gen:
+  #作者
+  author: sijay
+  #包路径
+  packageName: cn.sijay.egg
+  #生成路径
+  genPath: /
+
+config:
+  user:
+    password:
+      maxRetryCount: 5
+      lockTime: 10
+  captcha:
+    enable: false
+    expire: 30
+  sse:
+    enabled: true
+    path: /resource/sse
+  xss:
+    enabled: true
+    excludeUrls:
+      - a
+      - b
+
+
+
+
+
+

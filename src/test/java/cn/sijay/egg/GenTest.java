@@ -1,6 +1,6 @@
 package cn.sijay.egg;
 
-import cn.sijay.egg.generator.entity.GenTable;
+import cn.sijay.egg.generator.records.GenTableQuery;
 import cn.sijay.egg.generator.service.GenService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ public class GenTest {
 
     @Test
     void listDbTable() {
-        genService.listDbTable(new GenTable())
+        genService.listDbTable(new GenTableQuery("", ""))
                   .forEach(System.out::println);
     }
 

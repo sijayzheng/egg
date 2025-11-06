@@ -1,5 +1,6 @@
 package cn.sijay.egg.generator.entity;
 
+import cn.sijay.egg.generator.constants.GenContstant;
 import cn.sijay.egg.generator.enums.ColumnKeyEnum;
 import cn.sijay.egg.generator.enums.HtmlTypeEnum;
 import cn.sijay.egg.generator.enums.JavaTypeEnum;
@@ -10,10 +11,7 @@ import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
 import com.mybatisflex.core.handler.JacksonTypeHandler;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -25,9 +23,6 @@ import java.io.Serializable;
  * @since 2025-11-04
  */
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @Table("gen_column")
 public class GenColumn implements Serializable {
 
@@ -142,5 +137,9 @@ public class GenColumn implements Serializable {
      */
     public boolean isPk() {
         return ColumnKeyEnum.PRIMARY == columnKey;
+    }
+
+    public Boolean isSuper() {
+        return GenContstant.SUPER_FIELDS.contains(columnName);
     }
 }

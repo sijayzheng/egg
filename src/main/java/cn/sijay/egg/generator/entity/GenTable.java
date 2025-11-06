@@ -5,10 +5,7 @@ import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -20,9 +17,6 @@ import java.io.Serializable;
  * @since 2025-11-04
  */
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @Table("gen_table")
 public class GenTable implements Serializable {
 

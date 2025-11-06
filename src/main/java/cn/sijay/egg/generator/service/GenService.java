@@ -4,6 +4,7 @@ import cn.sijay.egg.core.exception.GeneratorException;
 import cn.sijay.egg.core.records.SelectOption;
 import cn.sijay.egg.core.util.FileUtil;
 import cn.sijay.egg.core.util.StringUtil;
+import cn.sijay.egg.generator.constants.GenContstant;
 import cn.sijay.egg.generator.entity.GenColumn;
 import cn.sijay.egg.generator.entity.GenTable;
 import cn.sijay.egg.generator.enums.GenerateTypeEnum;
@@ -12,6 +13,7 @@ import cn.sijay.egg.generator.enums.JavaTypeEnum;
 import cn.sijay.egg.generator.enums.QueryTypeEnum;
 import cn.sijay.egg.generator.properties.GenProperties;
 import cn.sijay.egg.generator.records.ColumnOption;
+import cn.sijay.egg.generator.records.GenTableQuery;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * GenService
@@ -37,19 +41,18 @@ import java.util.*;
 @RequiredArgsConstructor
 @Service
 public class GenService {
-    private final static List<String> NEEDLESS = List.of("create_dept", "create_by", "create_time", "is_deleted", "update_by", "update_time", "version");
     private final static List<String> TEMPLATES = List.of(
 //                "controller.java",
-            "entity.java"
-//                "mapper.java",
-//                "req.java",
+            "entity.java",
+            "mapper.java",
+            "query.java",
 //                "resp.java",
 //                "service.java",
 //                "serviceImpl.java",
 //                "api.ts",
 //                "types.ts",
 //                "dialog.vue",
-//               "sql"
+            "sql"
     );
     private final GenTableService tableService;
     private final GenColumnService columnService;
@@ -96,6 +99,7 @@ public class GenService {
     private void initColumn(GenColumn column) {
         String columnType = column.getColumnType();
         String dataType = (columnType.contains("(") ? StringUtils.substringBefore(columnType, "(") : columnType).toLowerCase();
+        dataType = dataType.replace("unsigned", "").trim();
         // 统一转小写 避免有些数据库默认大写问题
         String columnName = column.getColumnName().toLowerCase();
         // 设置java字段名
@@ -143,7 +147,7 @@ public class GenService {
         if (isSelect) {
             column.setColumnOption(new ColumnOption(columnTypeToSelectOptions(columnType), dataType.equals("enum")));
         }
-        boolean need = !NEEDLESS.contains(columnName);
+        boolean need = !GenContstant.NEEDLESS.contains(columnName);
         column.setIsVisible(need);
         column.setIsQuery(need && !column.isPk() && !"remark".equals(columnName));
     }
@@ -191,15 +195,15 @@ public class GenService {
         String className = table.getClassName();
         String businessName = table.getBusinessName();
 
-        String rootPath = StringUtils.defaultIfBlank(genProperties.getGenPath(), FileUtil.joinPath(System.getProperty("user.dir"), "code"));
+        String rootPath = StringUtils.defaultIfBlank(genProperties.getGenPath(), System.getProperty("user.dir"));
 
-        String javaPath = FileUtil.joinPath(rootPath, "src", "main", "java", "com", "grcreat", moduleName);
-        String vuePath = FileUtil.joinPath(rootPath, "vue", "src");
+        String javaPath = FileUtil.joinPath(rootPath, "src", "main", "java", "cn", "sijay", "egg", moduleName);
+        String vuePath = FileUtil.joinPath(rootPath, "ui", "src");
         try {
             FileUtil.writeToFile(FileUtil.joinPath(javaPath, "entity", className + ".java"), codeMap.get("entity.java"));
-//            FileUtil.writeToFile(FileUtil.joinPath(javaPath, "req", className + "Req.java"), codeMap.get("req.java"));
+            FileUtil.writeToFile(FileUtil.joinPath(javaPath, "records", className + "Query.java"), codeMap.get("query.java"));
 //            FileUtil.writeToFile(FileUtil.joinPath(javaPath, "resp", className + "Resp.java"), codeMap.get("resp.java"));
-//            FileUtil.writeToFile(FileUtil.joinPath(javaPath, "mapper", className + "Mapper.java"), codeMap.get("mapper.java"));
+            FileUtil.writeToFile(FileUtil.joinPath(javaPath, "mapper", className + "Mapper.java"), codeMap.get("mapper.java"));
 //            FileUtil.writeToFile(FileUtil.joinPath(javaPath, "service", "I" + className + "Service.java"), codeMap.get("service.java"));
 //            FileUtil.writeToFile(FileUtil.joinPath(javaPath, "service", "impl", className + "ServiceImpl.java"), codeMap.get("serviceImpl.java"));
 //            FileUtil.writeToFile(FileUtil.joinPath(javaPath, "controller", className + "Controller.java"), codeMap.get("controller.java"));
@@ -229,6 +233,19 @@ public class GenService {
 
     private Map<String, Object> processData(GenTable table, List<GenColumn> columns) {
         Map<String, Object> data = new HashMap<>();
+        // 字段信息
+        data.put("columns", columns);
+        // 需要导入的包
+        Set<String> imports = columns.parallelStream()
+                                     .map(GenColumn::getJavaType)
+                                     .map(JavaTypeEnum::getPackageName)
+                                     .filter(StringUtils::isNotBlank)
+                                     .collect(Collectors.toSet());
+//
+        data.put("hasSuper", columns.parallelStream()
+                                    .map(GenColumn::getColumnName)
+                                    .collect(Collectors.toSet())
+                                    .containsAll(GenContstant.SUPER_FIELDS));
         // 物理表名
         data.put("tableName", table.getTableName());
         // Java包路径
@@ -243,8 +260,10 @@ public class GenService {
         data.put("businessName", table.getBusinessName());
         // 作者
         data.put("author", table.getAuthor());
+        data.put("date", LocalDate.now());
         // 生成类型
         data.put("generateType", table.getGenerateType().name());
+        data.put("isTree", false);
         if (table.getGenerateType() == GenerateTypeEnum.TREE) {
             // 唯一标识字段
             data.put("treeKey", table.getTreeKey());
@@ -252,21 +271,17 @@ public class GenService {
             data.put("treeParentKey", table.getTreeParentKey());
             // 展示字段
             data.put("treeLabel", table.getTreeLabel());
+            data.put("isTree", true);
+            imports.add("java.util.List");
         }
         // 所属菜单
         data.put("parentMenuId", table.getParentMenuId());
-        // 字段信息
-        data.put("columns", columns);
-        // 需要导入的包
-        List<String> imports = columns.parallelStream().map(GenColumn::getJavaType).map(JavaTypeEnum::getPackageName).distinct()
-                                      .filter(StringUtils::isNotBlank).sorted()
-                                      .toList();
         data.put("imports", imports);
         return data;
     }
 
-    public List<GenTable> listDbTable(GenTable genTable) {
-        return tableService.listDbTable(genTable);
+    public List<GenTable> listDbTable(GenTableQuery query) {
+        return tableService.listDbTable(query);
     }
 
     /**

@@ -1,18 +1,18 @@
-package com.grcreat.${moduleName}.controller;
+package cn.sijay.egg.${moduleName}.controller;
 
 import java.util.List;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
-import com.grcreat.common.core.domain.Result;
-import com.grcreat.common.core.utils.MapstructUtils;
-import com.grcreat.common.core.validate.AddGroup;
-import com.grcreat.common.core.validate.EditGroup;
-import com.grcreat.common.excel.utils.ExcelUtil;
-import com.grcreat.common.idempotent.annotation.RepeatSubmit;
-import com.grcreat.common.log.annotation.Log;
-import com.grcreat.common.log.enums.BusinessType;
-import com.grcreat.common.mybatis.core.page.PageQuery;
-import com.grcreat.common.web.core.BaseController;
+import cn.sijay.egg.common.core.domain.Result;
+import cn.sijay.egg.common.core.utils.MapstructUtils;
+import cn.sijay.egg.common.core.validate.AddGroup;
+import cn.sijay.egg.common.core.validate.EditGroup;
+import cn.sijay.egg.common.excel.utils.ExcelUtil;
+import cn.sijay.egg.common.idempotent.annotation.RepeatSubmit;
+import cn.sijay.egg.common.log.annotation.Log;
+import cn.sijay.egg.common.log.enums.BusinessType;
+import cn.sijay.egg.common.mybatis.core.page.PageQuery;
+import cn.sijay.egg.common.web.core.BaseController;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -22,10 +22,10 @@ import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.grcreat.${moduleName}.bo.${className}Bo;
-import com.grcreat.${moduleName}.domain.${className};
-import com.grcreat.${moduleName}.service.I${className}Service;
-import com.grcreat.${moduleName}.vo.${className}Vo;
+import cn.sijay.egg.${moduleName}.bo.${className}Bo;
+import cn.sijay.egg.${moduleName}.domain.${className};
+import cn.sijay.egg.${moduleName}.service.I${className}Service;
+import cn.sijay.egg.${moduleName}.vo.${className}Vo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +33,7 @@ import java.util.List;
  * ${functionName}
  *
  * @author ${author}
- * @since ${datetime}
+ * @since ${date}
  */
 @Validated
 @RequiredArgsConstructor

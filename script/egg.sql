@@ -1,4 +1,4 @@
-drop table gen_table;
+drop table if exists gen_table;
 create table gen_table
 (
     id              bigint unsigned not null auto_increment comment '主键id',
@@ -18,7 +18,7 @@ create table gen_table
     primary key (id),
     unique key (table_name)
 ) comment '代码生成表信息';
-drop table gen_column;
+drop table if exists gen_column;
 create table gen_column
 (
     id             bigint unsigned not null auto_increment comment '主键id',
@@ -41,7 +41,7 @@ create table gen_column
     primary key (id),
     index idx_table_id (table_id)
 ) comment '代码生成列信息';
-drop table test_table;
+drop table if exists test_table;
 create table test_table
 (
     id             bigint    not null auto_increment comment 'id',
@@ -95,7 +95,7 @@ values (1, 1, 100, 1000, 10000, 100000, 123.45, 1234.5678, 999.99, _binary '', 
        (5, 5, 500, 5000, 50000, 500000, 523.45, 5234.5678, 599.99, _binary '', '2023-01-05', '16:30:45', '2023-01-05 16:30:45',
         '2025-09-21 13:17:42', 2023, 'mno', 'fifth sample', _binary 'binary5\0\0\0', _binary 'varbinary5', 'tiny text 5', 'regular text 5',
         'medium text 5', 'very long text content 5', 'v2', 'v1,v3', null, null, null, null);
-drop table test_tree;
+drop table if exists test_tree;
 create table test_tree
 (
     id        bigint unsigned not null auto_increment comment '主键id',

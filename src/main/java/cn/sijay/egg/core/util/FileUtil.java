@@ -8,6 +8,7 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +75,8 @@ public class FileUtil {
     }
 
     public static void writeToFile(String path, String content) {
-        writeToFile(new File(path), content, StandardCharsets.UTF_8);
+        System.out.println(path);
+        writeToFile(new File(path), content);
     }
 
     public static void writeToFile(String path, String content, Charset charset) {
@@ -87,7 +89,14 @@ public class FileUtil {
 
     public static void writeToFile(File file, String content, Charset charset) {
         try {
-            Files.writeString(file.toPath(), content, charset, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            // 获取父目录
+            Path path = file.toPath();
+            Path parentDir = path.getParent();
+            // 如果父目录不为空且不存在，则创建父目录
+            if (parentDir != null && !Files.exists(parentDir)) {
+                Files.createDirectories(parentDir);
+            }
+            Files.writeString(path, content, charset, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
         } catch (IOException e) {
             throw new RuntimeException("写入文件失败", e);
         }

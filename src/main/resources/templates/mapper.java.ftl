@@ -1,15 +1,14 @@
-package com.grcreat.${moduleName}.mapper;
+package cn.sijay.egg.${moduleName}.mapper;
 
-import com.grcreat.${moduleName}.domain.${className};
-import com.grcreat.${moduleName}.vo.${className}Vo;
-import com.grcreat.common.mybatis.core.mapper.BaseMapperPlus;
+import cn.sijay.egg.${moduleName}.entity.${className};
+import com.mybatisflex.core.BaseMapper;
 
 /**
- * ${functionName}Mapper接口
+ * ${className}Mapper接口
  *
  * @author ${author}
- * @since ${datetime}
+ * @since ${date}
  */
-public interface ${className}Mapper extends BaseMapperPlus<${className}, ${className}Vo> {
+public interface ${className}Mapper extends BaseMapper<${className}> {
 
 }

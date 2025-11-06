@@ -65,7 +65,7 @@ gen:
   #包路径
   packageName: cn.sijay.egg
   #生成路径
-  genPath: /
+  genPath:
 
 config:
   user:

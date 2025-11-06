@@ -1,10 +1,16 @@
-package com.grcreat.${moduleName}.domain;
+package cn.sijay.egg.${moduleName}.entity;
 
-<#if hasSuper>import com.grcreat.common.mybatis.core.domain.BaseEntity;</#if>
-import com.baomidou.mybatisplus.annotation.*;
+import cn.idev.excel.annotation.ExcelIgnoreUnannotated;
+import cn.idev.excel.annotation.ExcelProperty;
+<#if hasSuper>import cn.sijay.egg.core.base.BaseEntity;</#if>
+import com.mybatisflex.annotation.Column;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
+import com.mybatisflex.annotation.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-<#if hasSuper>import lombok.EqualsAndHashCode;</#if>
-<#list importList as import>
+<#list imports as import>
 import ${import};
 </#list>
 
@@ -14,37 +20,58 @@ import java.io.Serializable;
 </#if>
 
 /**
- * ${functionName}对象 ${tableName}
+ * ${classComment}对象 ${tableName}
  *
  * @author ${author}
- * @since ${datetime}
+ * @since ${date}
  */
+@ExcelIgnoreUnannotated
 @Data
-<#if hasSuper>@EqualsAndHashCode(callSuper = true)</#if>
-@TableName("${tableName}")
+@Table("${tableName}")
 public class ${className} <#if hasSuper>extends BaseEntity<#else>implements Serializable</#if> {
 
-    <#if !hasSuper>
+<#if !hasSuper>
     @Serial
     private static final long serialVersionUID = 1L;
 
-    </#if>
+</#if>
 <#list columns as column>
-    <#if !table.isSuperColumn(column.javaField)>
+    <#if !column.isSuper()>
     /**
-     * ${column.columnComment}
+     * ${column.javaComment}
      */
-    <#if column.javaField == 'isDeleted'>
-    @TableLogic
-    </#if>
-    <#if column.javaField == 'version'>
-    @Version
-    </#if>
-    <#if column.isPk>
-    @TableId(value = "${column.columnName}")
-    </#if>
-    private ${column.javaType} ${column.javaField};
+        <#if column.isPk()>
+    @Id(keyType = KeyType.Auto)
+        </#if>
+    @Column(value = "${column.columnName}"<#if column.javaField == 'isDeleted'>, isLogicDelete = true</#if><#if column.javaField == 'version'>, version = true</#if>)
+        <#if !column.isPk()>
+            <#if column.isRequired>
+                <#if column.javaType == 'STRING'>
+    @NotBlank(message = "${column.javaComment}不能为空")
+                <#else>
+    @NotNull(message = "${column.javaComment}不能为空")
+                </#if>
+            </#if>
+            <#if (column.columnOption.dictCode())?has_content>
+    @ExcelProperty(value = "${column.javaComment}", converter = ExcelDictConvert.class)
+    @ExcelDictFormat(dictCode = "${column.columnOption.dictCode}")
+            <#elseif column.javaDesc?has_content>
+    @ExcelProperty(value = "${column.javaComment}", converter = ExcelDictConvert.class)
+    @ExcelDictFormat(readConverterExp = "${column.javaDesc}")
+            <#else>
+    @ExcelProperty(value = "${column.javaComment}")
+            </#if>
+        </#if>
+    private ${column.javaType.code} ${column.javaField};
 
     </#if>
 </#list>
+<#if isTree>
+    /**
+     * 子列表
+     */
+    @Column(ignore = true)
+    private List<${className}> children;
+
+</#if>
 }

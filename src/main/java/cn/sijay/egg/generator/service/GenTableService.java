@@ -3,6 +3,7 @@ package cn.sijay.egg.generator.service;
 import cn.sijay.egg.core.base.BaseService;
 import cn.sijay.egg.generator.entity.GenTable;
 import cn.sijay.egg.generator.mapper.GenTableMapper;
+import cn.sijay.egg.generator.records.GenTableQuery;
 import com.mybatisflex.core.query.QueryChain;
 import com.mybatisflex.core.query.QueryColumn;
 import lombok.RequiredArgsConstructor;
@@ -23,19 +24,18 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class GenTableService extends BaseService<GenTableMapper, GenTable> {
-    private final GenTableMapper baseMapper;
 
-    public List<GenTable> listDbTable(GenTable genTable) {
+    public List<GenTable> listDbTable(GenTableQuery query) {
         QueryChain<GenTable> queryChain = queryChain().select("table_name", "table_comment")
                                                       .from("information_schema.tables")
                                                       .where("table_schema=schema()")
                                                       .and("table_name not like 'gen_%'")
                                                       .and("table_name not in (select table_name from gen_table)");
-        if (StringUtils.isNotBlank(genTable.getTableComment())) {
-            queryChain.and("table_comment like '%" + genTable.getTableComment() + "%'");
+        if (StringUtils.isNotBlank(query.tableComment())) {
+            queryChain.and("table_comment like '%" + query.tableComment() + "%'");
         }
-        if (StringUtils.isNotBlank(genTable.getTableName())) {
-            queryChain.and("table_name like '%" + genTable.getTableName() + "%'");
+        if (StringUtils.isNotBlank(query.tableName())) {
+            queryChain.and("table_name like '%" + query.tableName() + "%'");
         }
         return queryChain.list();
     }

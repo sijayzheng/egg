@@ -42,13 +42,11 @@ import java.util.stream.Collectors;
 @Service
 public class GenService {
     private final static List<String> TEMPLATES = List.of(
-//                "controller.java",
             "entity.java",
             "mapper.java",
             "query.java",
-//                "resp.java",
-//                "service.java",
-//                "serviceImpl.java",
+            "service.java",
+            "controller.java",
 //                "api.ts",
 //                "types.ts",
 //                "dialog.vue",
@@ -202,13 +200,11 @@ public class GenService {
         try {
             FileUtil.writeToFile(FileUtil.joinPath(javaPath, "entity", className + ".java"), codeMap.get("entity.java"));
             FileUtil.writeToFile(FileUtil.joinPath(javaPath, "records", className + "Query.java"), codeMap.get("query.java"));
-//            FileUtil.writeToFile(FileUtil.joinPath(javaPath, "resp", className + "Resp.java"), codeMap.get("resp.java"));
             FileUtil.writeToFile(FileUtil.joinPath(javaPath, "mapper", className + "Mapper.java"), codeMap.get("mapper.java"));
-//            FileUtil.writeToFile(FileUtil.joinPath(javaPath, "service", "I" + className + "Service.java"), codeMap.get("service.java"));
-//            FileUtil.writeToFile(FileUtil.joinPath(javaPath, "service", "impl", className + "ServiceImpl.java"), codeMap.get("serviceImpl.java"));
-//            FileUtil.writeToFile(FileUtil.joinPath(javaPath, "controller", className + "Controller.java"), codeMap.get("controller.java"));
+            FileUtil.writeToFile(FileUtil.joinPath(javaPath, "service", className + "Service.java"), codeMap.get("service.java"));
+            FileUtil.writeToFile(FileUtil.joinPath(javaPath, "controller", className + "Controller.java"), codeMap.get("controller.java"));
 //            FileUtil.writeToFile(FileUtil.joinPath(vuePath, "api", moduleName, businessName, "index.ts"), codeMap.get("api.ts"));
-//            FileUtil.writeToFile(FileUtil.joinPath(vuePath, "api", moduleName, businessName, "types.ts"), codeMap.get("types.ts"));
+//            FileUtil.writeToFile(FileUtil.joinPath(vuePath, "types", moduleName, businessName, "types.ts"), codeMap.get("types.ts"));
 //            FileUtil.writeToFile(FileUtil.joinPath(vuePath, "views", moduleName, businessName, "index.vue"), codeMap.get("index.vue"));
 //            FileUtil.writeToFile(FileUtil.joinPath(vuePath, "views", moduleName, businessName, "dialog.vue"), codeMap.get("dialog.vue"));
 //            FileUtil.writeToFile(FileUtil.joinPath(rootPath, "menuSql", className + ".sql"), codeMap.get("sql"));
@@ -235,6 +231,10 @@ public class GenService {
         Map<String, Object> data = new HashMap<>();
         // 字段信息
         data.put("columns", columns);
+        data.put("pkColumn", columns.parallelStream()
+                                    .filter(GenColumn::isPk)
+                                    .findFirst()
+                                    .orElse(new GenColumn()));
         // 需要导入的包
         Set<String> imports = columns.parallelStream()
                                      .map(GenColumn::getJavaType)
@@ -248,6 +248,7 @@ public class GenService {
                                     .containsAll(GenContstant.SUPER_FIELDS));
         // 物理表名
         data.put("tableName", table.getTableName());
+        data.put("tableDef", table.getTableName().toUpperCase(Locale.ROOT));
         // Java包路径
         data.put("packageName", table.getPackageName());
         // 模块名

@@ -4,7 +4,7 @@ import cn.sijay.egg.${moduleName}.entity.${className};
 import com.mybatisflex.core.BaseMapper;
 
 /**
- * ${className}Mapper接口
+ * ${className}数据访问
  *
  * @author ${author}
  * @since ${date}

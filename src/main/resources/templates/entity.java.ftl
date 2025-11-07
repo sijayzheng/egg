@@ -20,7 +20,7 @@ import java.io.Serializable;
 </#if>
 
 /**
- * ${classComment}对象 ${tableName}
+ * ${className}对象-${tableName}
  *
  * @author ${author}
  * @since ${date}

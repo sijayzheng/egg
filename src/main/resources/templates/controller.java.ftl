@@ -1,19 +1,18 @@
 package cn.sijay.egg.${moduleName}.controller;
 
-import java.util.List;
-
 import cn.dev33.satoken.annotation.SaCheckPermission;
-import cn.sijay.egg.common.core.domain.Result;
-import cn.sijay.egg.common.core.utils.MapstructUtils;
-import cn.sijay.egg.common.core.validate.AddGroup;
-import cn.sijay.egg.common.core.validate.EditGroup;
-import cn.sijay.egg.common.excel.utils.ExcelUtil;
-import cn.sijay.egg.common.idempotent.annotation.RepeatSubmit;
-import cn.sijay.egg.common.log.annotation.Log;
-import cn.sijay.egg.common.log.enums.BusinessType;
-import cn.sijay.egg.common.mybatis.core.page.PageQuery;
-import cn.sijay.egg.common.web.core.BaseController;
+import cn.sijay.egg.core.annotations.Log;
+import cn.sijay.egg.core.annotations.RepeatSubmit;
+import cn.sijay.egg.core.base.BaseController;
+import cn.sijay.egg.core.enums.BusinessType;
+import cn.sijay.egg.core.records.PageQuery;
+import cn.sijay.egg.core.records.Result;
+import cn.sijay.egg.core.util.ExcelUtil;
+import cn.sijay.egg.${moduleName}.entity.${className};
+import cn.sijay.egg.${moduleName}.records.${className}Query;
+import cn.sijay.egg.${moduleName}.service.${className}Service;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -22,15 +21,12 @@ import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import cn.sijay.egg.${moduleName}.bo.${className}Bo;
-import cn.sijay.egg.${moduleName}.domain.${className};
-import cn.sijay.egg.${moduleName}.service.I${className}Service;
-import cn.sijay.egg.${moduleName}.vo.${className}Vo;
 
 import java.util.ArrayList;
 import java.util.List;
+
 /**
- * ${functionName}
+ * ${className}接口控制器
  *
  * @author ${author}
  * @since ${date}
@@ -41,33 +37,85 @@ import java.util.List;
 @RequestMapping("/${moduleName}/${businessName}")
 public class ${className}Controller extends BaseController {
 
-    private final I${className}Service ${businessName}Service;
+    private final ${className}Service ${businessName}Service;
 
+    <#if isTree>
     /**
-     * 查询${functionName}列表
+     * 查询${classComment}列表
      */
-    @SaCheckPermission("${permissionPrefix}:list")
+    @SaCheckPermission("${moduleName}:${businessName}:list")
     @GetMapping("/list")
-    <#if table.crud>
-    public Result<${className}Vo> list(${className}Bo bo, PageQuery pageQuery) {
-        return build(${businessName}Service.queryPageList(bo, pageQuery));
+    public Result<List<${className}>> list(${className}Query query, PageQuery pageQuery) {
+        return success(${businessName}Service.page(query, pageQuery));
     }
-    <#elseif table.tree>
-    public Result<List<${className}Vo>> list(${className}Bo bo) {
-        List<${className}Vo> list = ${businessName}Service.queryList(bo);
-        return success(list);
+    <#else>
+    public Result<List<${className}>> list(${className}Query query) {
+        return success(${businessName}Service.list(query));
     }
     </#if>
 
     /**
-     * 导出${functionName}列表
+     * 获取${classComment}详细信息
+     *
+     * @param ${pkColumn.javaField} 主键
      */
-    @SaCheckPermission("${permissionPrefix}:export")
-    @Log(title = "${functionName}", businessType = BusinessType.EXPORT)
+    @SaCheckPermission("${moduleName}:${businessName}:query")
+    @GetMapping("/{${pkColumn.javaField}}")
+    public Result<${className}> getById(@NotNull(message = "主键不能为空") @PathVariable("${pkColumn.javaField}") ${pkColumn.javaType.code} ${pkColumn.javaField}) {
+        return success(${businessName}Service.getById(${pkColumn.javaField}));
+    }
+
+    /**
+     * 新增${classComment}
+     */
+    @SaCheckPermission("${moduleName}:${businessName}:add")
+    @Log(title = "${classComment}", businessType = BusinessType.INSERT)
+    @RepeatSubmit()
+    @PostMapping("/add")
+    public Result<Void> add(@RequestBody @Valid ${className} entity) {
+        return message(${businessName}Service.insert(entity), "新增");
+    }
+
+    /**
+     * 修改${classComment}
+     */
+    @SaCheckPermission("${moduleName}:${businessName}:edit")
+    @Log(title = "${classComment}", businessType = BusinessType.UPDATE)
+    @RepeatSubmit()
+    @PostMapping("/edit")
+    public Result<Void> edit(@RequestBody @Valid ${className} entity) {
+        return message(${businessName}Service.update(entity), "修改");
+    }
+
+    /**
+     * 删除${classComment}
+     *
+     * @param ${pkColumn.javaField}s 主键串
+     */
+    @SaCheckPermission("${moduleName}:${businessName}:remove")
+    @Log(title = "${classComment}", businessType = BusinessType.DELETE)
+    @DeleteMapping
+    public Result<Void> remove(@NotEmpty(message = "主键不能为空") List<${pkColumn.javaType.code}> ${pkColumn.javaField}s) {
+        return message(${businessName}Service.deleteWithValidByIds(${pkColumn.javaField}s), "删除");
+    }
+
+    /**
+     * 导出${classComment}列表
+     */
+    @SaCheckPermission("${moduleName}:${businessName}:export")
+    @Log(title = "${classComment}", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(${className}Bo bo, HttpServletResponse response) {
-    List<${className}Vo> list = ${businessName}Service.queryList(bo);
-        ExcelUtil.exportExcel(list, "${functionName}", ${className}Vo.class, response);
+    public void export(${className}Query query, HttpServletResponse response) {
+        List<${className}> list = ${businessName}Service.list(query);
+        ExcelUtil.exportExcel(list, "${classComment}", ${className}.class, response);
+    }
+
+    /**
+     * 获取导入模板
+     */
+    @PostMapping("/importTemplate")
+    public void importTemplate(HttpServletResponse response) {
+        ExcelUtil.exportExcel(new ArrayList<>(), "${classComment}模板", ${className}.class, response);
     }
 
     /**
@@ -76,71 +124,16 @@ public class ${className}Controller extends BaseController {
      * @param file          导入文件
      * @param updateSupport 是否更新已存在数据
      */
-    @Log(title = "${functionName}", businessType = BusinessType.IMPORT)
-    @SaCheckPermission("${permissionPrefix}:import")
+    @Log(title = "${classComment}", businessType = BusinessType.IMPORT)
+    @SaCheckPermission("${moduleName}:${businessName}:import")
     @PostMapping(value = "/importData", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Result<Void> importData(@RequestPart("file") MultipartFile file, boolean updateSupport) throws Exception {
-        List<${className}Vo> result = ExcelUtil.importExcel(file.getInputStream(), ${className}Vo.class);
+        List<${className}> result = ExcelUtil.importExcel(file.getInputStream(), ${className}.class);
         if (CollectionUtils.isEmpty(result)) {
             return error("导入数据不能为空");
         }
-        boolean flag = ${businessName}Service.saveBatch(MapstructUtils.convert(result, ${className}.class));
-        if (!flag) {
-            return error("数据导入失败");
-        }
-        return success("数据导入成功");
+        boolean flag = ${businessName}Service.saveBatch(result);
+        return message(flag, "数据导入");
     }
 
-    /**
-     * 获取导入模板
-     */
-    @PostMapping("/importTemplate")
-    public void importTemplate(HttpServletResponse response) {
-        ExcelUtil.exportExcel(new ArrayList<>(), "${functionName}数据", ${className}Vo.class, response);
-    }
-
-    /**
-     * 获取${functionName}详细信息
-     *
-     * @param ${pkColumn.javaField} 主键
-     */
-    @SaCheckPermission("${permissionPrefix}:query")
-    @GetMapping("/{${pkColumn.javaField}}")
-    public Result<${className}Vo> getInfo(@NotNull(message = "主键不能为空") @PathVariable ${pkColumn.javaType} ${pkColumn.javaField}) {
-        return success(${businessName}Service.queryById(${pkColumn.javaField}));
-    }
-
-    /**
-     * 新增${functionName}
-     */
-    @SaCheckPermission("${permissionPrefix}:add")
-    @Log(title = "${functionName}", businessType = BusinessType.INSERT)
-    @RepeatSubmit()
-    @PostMapping()
-    public Result<Void> add(@Validated(AddGroup.class) @RequestBody ${className}Bo bo) {
-        return toAjax(${businessName}Service.insertByBo(bo));
-    }
-
-    /**
-     * 修改${functionName}
-     */
-    @SaCheckPermission("${permissionPrefix}:edit")
-    @Log(title = "${functionName}", businessType = BusinessType.UPDATE)
-    @RepeatSubmit()
-    @PutMapping()
-    public Result<Void> edit(@Validated(EditGroup.class) @RequestBody ${className}Bo bo) {
-        return toAjax(${businessName}Service.updateByBo(bo));
-    }
-
-    /**
-     * 删除${functionName}
-     *
-     * @param ${pkColumn.javaField}s 主键串
-     */
-    @SaCheckPermission("${permissionPrefix}:remove")
-    @Log(title = "${functionName}", businessType = BusinessType.DELETE)
-    @DeleteMapping("/{${pkColumn.javaField}s}")
-    public Result<Void> remove(@NotEmpty(message = "主键不能为空") @PathVariable ${pkColumn.javaType}[] ${pkColumn.javaField}s) {
-        return toAjax(${businessName}Service.deleteWithValidByIds(List.of(${pkColumn.javaField}s), true));
-    }
 }

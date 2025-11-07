@@ -1,6 +1,7 @@
 package cn.sijay.egg.core.records;
 
 import com.mybatisflex.core.paginate.Page;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
@@ -11,7 +12,9 @@ import java.util.List;
  * @since 2025/11/3
  */
 public record PageQuery(
+        @NotNull(message = "当前页数不能为空")
         Long current,
+        @NotNull(message = "分页大小不能为空")
         Long size,
         List<PageOrder> orders
 ) {

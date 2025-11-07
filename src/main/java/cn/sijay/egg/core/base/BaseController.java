@@ -4,7 +4,6 @@ import cn.sijay.egg.core.enums.ResultCode;
 import cn.sijay.egg.core.records.Result;
 import com.mybatisflex.core.paginate.Page;
 import org.apache.commons.collections4.CollectionUtils;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -16,39 +15,47 @@ import java.util.List;
  */
 public class BaseController {
 
-    protected <T> Mono<Result<T>> success() {
-        return Mono.just(new Result<>(true, ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMessage()));
+    protected Result<Void> message(Boolean flag, String message) {
+        return flag ? success(message + "成功") : error(message + "失败");
     }
 
-    protected <T> Mono<Result<T>> success(T data) {
-        return Mono.just(new Result<>(true, ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMessage(), data));
+    protected Result<Void> success() {
+        return new Result<>(true, ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMessage());
     }
 
-    protected <T> Mono<Result<List<T>>> success(List<T> list) {
+    protected Result<Void> success(String message) {
+        return new Result<>(true, ResultCode.SUCCESS.getCode(), message, null);
+    }
+
+    protected <T> Result<T> success(T data) {
+        return new Result<>(true, ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMessage(), data);
+    }
+
+    protected <T> Result<List<T>> success(List<T> list) {
         if (CollectionUtils.isNotEmpty(list)) {
-            return Mono.just(new Result<>(true, ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMessage(), list, (long) list.size()));
+            return new Result<>(true, ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMessage(), list, (long) list.size());
         }
-        return Mono.just(new Result<>(true, ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMessage(), list, 0L));
+        return new Result<>(true, ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMessage(), list, 0L);
     }
 
-    protected <T> Mono<Result<List<T>>> success(Page<T> page) {
-        return Mono.just(new Result<>(true, ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMessage(), page.getRecords(), page.getTotalRow()));
+    protected <T> Result<List<T>> success(Page<T> page) {
+        return new Result<>(true, ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMessage(), page.getRecords(), page.getTotalRow());
     }
 
-    protected <T> Mono<Result<T>> success(Boolean success, Integer code, String message, T data) {
-        return Mono.just(new Result<>(success, code, message, data));
+    protected <T> Result<T> success(Boolean success, Integer code, String message, T data) {
+        return new Result<>(success, code, message, data);
     }
 
-    protected <T> Mono<Result<T>> error() {
-        return Mono.just(new Result<>(false, ResultCode.INTERNAL_SERVER_ERROR.getCode(), ResultCode.INTERNAL_SERVER_ERROR.getMessage()));
+    protected Result<Void> error() {
+        return new Result<>(false, ResultCode.INTERNAL_SERVER_ERROR.getCode(), ResultCode.INTERNAL_SERVER_ERROR.getMessage());
     }
 
-    protected <T> Mono<Result<T>> error(String message) {
-        return Mono.just(new Result<>(true, ResultCode.CUSTOM_ERROR.getCode(), message));
+    protected Result<Void> error(String message) {
+        return new Result<>(true, ResultCode.CUSTOM_ERROR.getCode(), message);
     }
 
-    protected <T> Mono<Result<T>> error(ResultCode resultCode) {
-        return Mono.just(new Result<>(false, resultCode.getCode(), resultCode.getMessage()));
+    protected Result<Void> error(ResultCode resultCode) {
+        return new Result<>(false, resultCode.getCode(), resultCode.getMessage());
     }
 
 }

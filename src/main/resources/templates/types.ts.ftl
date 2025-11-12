@@ -1,4 +1,4 @@
-export interface ${className}VO {
+export interface ${className} {
 <#list columns as column>
 <#if column.isList>
   /**
@@ -17,7 +17,7 @@ export interface ${className}VO {
   /**
    * 子对象
    */
-  children: ${className}VO[];
+  children: ${className}[];
 </#if>
 }
 

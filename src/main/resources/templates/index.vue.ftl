@@ -278,7 +278,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" name="${className}">
 <#if dicts != ''>
 <#assign dictsNoSymbol = dicts?replace("'", "")>
 const {${dictsNoSymbol}} = toRefs<any>(useDict(${dicts}))

@@ -47,8 +47,8 @@ public class GenService {
             "query.java",
             "service.java",
             "controller.java",
-//                "api.ts",
-//                "types.ts",
+            "api.ts",
+            "types.ts",
 //                "dialog.vue",
             "sql"
     );
@@ -187,7 +187,7 @@ public class GenService {
             throw new GeneratorException("列信息不存在");
         }
         Map<String, Object> data = processData(table, columns);
-        Map<String, String> codeMap = genCode(data);
+        Map<String, String> codeMap = genCode(data, table.getGenerateType() == GenerateTypeEnum.TREE);
 
         String moduleName = table.getModuleName();
         String className = table.getClassName();
@@ -203,10 +203,10 @@ public class GenService {
             FileUtil.writeToFile(FileUtil.joinPath(javaPath, "mapper", className + "Mapper.java"), codeMap.get("mapper.java"));
             FileUtil.writeToFile(FileUtil.joinPath(javaPath, "service", className + "Service.java"), codeMap.get("service.java"));
             FileUtil.writeToFile(FileUtil.joinPath(javaPath, "controller", className + "Controller.java"), codeMap.get("controller.java"));
-//            FileUtil.writeToFile(FileUtil.joinPath(vuePath, "api", moduleName, businessName, "index.ts"), codeMap.get("api.ts"));
-//            FileUtil.writeToFile(FileUtil.joinPath(vuePath, "types", moduleName, businessName, "types.ts"), codeMap.get("types.ts"));
-//            FileUtil.writeToFile(FileUtil.joinPath(vuePath, "views", moduleName, businessName, "index.vue"), codeMap.get("index.vue"));
-//            FileUtil.writeToFile(FileUtil.joinPath(vuePath, "views", moduleName, businessName, "dialog.vue"), codeMap.get("dialog.vue"));
+            FileUtil.writeToFile(FileUtil.joinPath(vuePath, "api", moduleName, businessName + ".ts"), codeMap.get("api.ts"));
+            FileUtil.writeToFile(FileUtil.joinPath(vuePath, "types", moduleName, businessName + ".ts"), codeMap.get("types.ts"));
+//            FileUtil.writeToFile(FileUtil.joinPath(vuePath, "views", moduleName, businessName,"index.vue"), codeMap.get("index.vue"));
+//            FileUtil.writeToFile(FileUtil.joinPath(vuePath, "views", moduleName, businessName,"dialog.vue"), codeMap.get("dialog.vue"));
 //            FileUtil.writeToFile(FileUtil.joinPath(rootPath, "menuSql", className + ".sql"), codeMap.get("sql"));
         } catch (Exception e) {
             e.printStackTrace();
@@ -217,24 +217,41 @@ public class GenService {
     /**
      * 生成代码
      */
-    private Map<String, String> genCode(Map<String, Object> data) {
+    private Map<String, String> genCode(Map<String, Object> data, boolean isTree) {
         // 生成文件列表
         Map<String, String> codes = new LinkedHashMap<>();
         for (String template : TEMPLATES) {
             codes.put(template, processTemplate(template + ".ftl", data));
         }
-//            codes.put("index.vue", processTemplate("index"+(GenerateTypeEnum.LIST.equals(table.getGenerateType())?"":"-tree")+".ftl", data));
+//            codes.put("index.vue", processTemplate("index"+isTree?"":"-tree")+".ftl", data));
         return codes;
+    }
+
+    /**
+     * 处理模板并返回结果
+     *
+     * @param templateName 模板名称
+     * @param data         数据模型
+     * @return 渲染后的内容
+     */
+    private String processTemplate(String templateName, Map<String, Object> data) {
+        try {
+            return FreeMarkerTemplateUtils.processTemplateIntoString(configuration.getTemplate(templateName), data);
+        } catch (IOException | TemplateException e) {
+            log.error("渲染模板失败: ", e);
+            throw new GeneratorException("渲染模板失败，表名：" + templateName);
+        }
     }
 
     private Map<String, Object> processData(GenTable table, List<GenColumn> columns) {
         Map<String, Object> data = new HashMap<>();
         // 字段信息
         data.put("columns", columns);
-        data.put("pkColumn", columns.parallelStream()
-                                    .filter(GenColumn::isPk)
-                                    .findFirst()
-                                    .orElse(new GenColumn()));
+        GenColumn pk = columns.parallelStream()
+                              .filter(GenColumn::isPk)
+                              .findFirst()
+                              .orElse(new GenColumn());
+        data.put("pkColumn", pk);
         // 需要导入的包
         Set<String> imports = columns.parallelStream()
                                      .map(GenColumn::getJavaType)
@@ -267,11 +284,12 @@ public class GenService {
         data.put("isTree", false);
         if (table.getGenerateType() == GenerateTypeEnum.TREE) {
             // 唯一标识字段
-            data.put("treeKey", table.getTreeKey());
+            data.put("treeKey", StringUtil.toUpperCamelCase(table.getTreeKey()));
             // 父标识字段
-            data.put("treeParentKey", table.getTreeParentKey());
+            data.put("treeParentKey", StringUtil.toUpperCamelCase(table.getTreeParentKey()));
             // 展示字段
-            data.put("treeLabel", table.getTreeLabel());
+            data.put("treeLabel", StringUtil.toUpperCamelCase(table.getTreeLabel()));
+            data.put("parentId", pk.getJavaType() == JavaTypeEnum.LONG ? "0L" : "\"0\"");
             data.put("isTree", true);
             imports.add("java.util.List");
         }
@@ -283,21 +301,5 @@ public class GenService {
 
     public List<GenTable> listDbTable(GenTableQuery query) {
         return tableService.listDbTable(query);
-    }
-
-    /**
-     * 处理模板并返回结果
-     *
-     * @param templateName 模板名称
-     * @param data         数据模型
-     * @return 渲染后的内容
-     */
-    private String processTemplate(String templateName, Map<String, Object> data) {
-        try {
-            return FreeMarkerTemplateUtils.processTemplateIntoString(configuration.getTemplate(templateName), data);
-        } catch (IOException | TemplateException e) {
-            log.error("渲染模板失败: ", e);
-            throw new GeneratorException("渲染模板失败，表名：" + templateName);
-        }
     }
 }

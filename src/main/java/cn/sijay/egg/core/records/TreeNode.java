@@ -8,11 +8,14 @@ import java.util.List;
  * @author sijay
  * @since 2025-11-05
  */
-public record TreeNode<T>(
+public record TreeNode<T, K>(
         String label,
-        T value,
-        List<TreeNode<T>> children,
+        K value,
+        List<TreeNode<T, K>> children,
         Integer level,
         Boolean isLeaf
 ) {
+    public TreeNode(String label, K value, List<TreeNode<T, K>> children) {
+        this(label, value, children, null, null);
+    }
 }

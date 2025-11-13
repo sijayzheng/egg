@@ -35,36 +35,34 @@ public class ${className} <#if hasSuper>extends BaseEntity<#else>implements Seri
     private static final long serialVersionUID = 1L;
 
 </#if>
-<#list columns as column>
-    <#if !column.isSuper()>
+<#list columns?filter(item -> !item.isSuper()) as column>
     /**
      * ${column.javaComment}
      */
-        <#if column.isPk()>
+    <#if column.isPk()>
     @Id(keyType = KeyType.Auto)
-        </#if>
+    </#if>
     @Column(value = "${column.columnName}"<#if column.javaField == 'isDeleted'>, isLogicDelete = true</#if><#if column.javaField == 'version'>, version = true</#if>)
-        <#if !column.isPk()>
-            <#if column.isRequired>
-                <#if column.javaType == 'STRING'>
+    <#if !column.isPk()>
+        <#if column.isRequired>
+            <#if column.javaType == 'STRING'>
     @NotBlank(message = "${column.javaComment}不能为空")
-                <#else>
+            <#else>
     @NotNull(message = "${column.javaComment}不能为空")
-                </#if>
             </#if>
-            <#if (column.columnOption.dictCode())?has_content>
+        </#if>
+        <#if (column.columnOption.dictCode())?has_content>
     @ExcelProperty(value = "${column.javaComment}", converter = ExcelDictConvert.class)
     @ExcelDictFormat(dictCode = "${column.columnOption.dictCode}")
-            <#elseif column.javaDesc?has_content>
+        <#elseif column.javaDesc?has_content>
     @ExcelProperty(value = "${column.javaComment}", converter = ExcelDictConvert.class)
     @ExcelDictFormat(readConverterExp = "${column.javaDesc}")
-            <#else>
+        <#else>
     @ExcelProperty(value = "${column.javaComment}")
-            </#if>
         </#if>
+    </#if>
     private ${column.javaType.code} ${column.javaField};
 
-    </#if>
 </#list>
 <#if isTree>
     /**

@@ -7,6 +7,10 @@ import cn.sijay.egg.core.base.BaseController;
 import cn.sijay.egg.core.enums.BusinessType;
 import cn.sijay.egg.core.records.PageQuery;
 import cn.sijay.egg.core.records.Result;
+<#if isTree>
+import cn.sijay.egg.core.records.TreeNode;
+import cn.sijay.egg.core.util.TreeUtil;
+</#if>
 import cn.sijay.egg.core.util.ExcelUtil;
 import cn.sijay.egg.${moduleName}.entity.${className};
 import cn.sijay.egg.${moduleName}.records.${className}Query;
@@ -45,12 +49,28 @@ public class ${className}Controller extends BaseController {
      */
     @SaCheckPermission("${moduleName}:${businessName}:list")
     @GetMapping("/list")
-    public Result<List<${className}>> list(${className}Query query, PageQuery pageQuery) {
-        return success(${businessName}Service.page(query, pageQuery));
-    }
-    <#else>
     public Result<List<${className}>> list(${className}Query query) {
         return success(${businessName}Service.list(query));
+    }
+
+
+    /**
+     * 获取${classComment}树
+     */
+    @SaCheckPermission("${moduleName}:${businessName}:list")
+    @GetMapping("/tree")
+    public Result<List<TreeNode<${className}, ${pkColumn.javaType.code}>>> tree() {
+        List<${className}> list = ${businessName}Service.list();
+        return success(TreeUtil.buildTree(list, ${className}::get${treeKey}, ${className}::get${treeLabel}, ${className}::get${treeParentKey}, ${parentId}));
+    }
+    <#else>
+    /**
+     * 查询${classComment}列表
+     */
+    @SaCheckPermission("${moduleName}:${businessName}:list")
+    @GetMapping("/list")
+    public Result<List<${className}>> list(${className}Query query, PageQuery pageQuery) {
+        return success(${businessName}Service.page(query, pageQuery));
     }
     </#if>
 
@@ -113,8 +133,8 @@ public class ${className}Controller extends BaseController {
     /**
      * 获取导入模板
      */
-    @PostMapping("/importTemplate")
-    public void importTemplate(HttpServletResponse response) {
+    @PostMapping("/downloadTemplate")
+    public void downloadTemplate(HttpServletResponse response) {
         ExcelUtil.exportExcel(new ArrayList<>(), "${classComment}模板", ${className}.class, response);
     }
 

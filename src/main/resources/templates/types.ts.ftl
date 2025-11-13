@@ -1,48 +1,45 @@
 export interface ${className} {
-<#list columns as column>
-<#if column.isList>
+<#list columns?filter(item -> item.isVisible) as column>
   /**
    * ${column.columnComment}
    */
-  ${column.javaField}: <#if column.javaField?contains("id") || column.javaField?contains("Id")>string | number<#elseif column.javaType == 'Long' || column.javaType == 'Integer' || column.javaType == 'Double' || column.javaType == 'Float' || column.javaType == 'BigDecimal'>number<#elseif column.javaType == 'Boolean'>boolean<#else>string</#if>;
-  <#if column.htmlType == "imageUpload">
+  ${column.javaField}?: ${column.javaType.tsType}
+  <#if column.htmlType == "IMAGE_UPLOAD">
   /**
    * ${column.columnComment}Url
    */
-  ${column.javaField}Url: string;
+  ${column.javaField}Url?: string
   </#if>
-</#if>
 </#list>
-<#if table.tree>
+<#if isTree>
   /**
    * 子对象
    */
-  children: ${className}[];
+  children?: ${className}[]
 </#if>
 }
 
 export interface ${className}Form <#if hasSuper>extends BaseEntity</#if> {
-<#list columns as column>
-  <#if column.isInsert || column.isEdit>
+<#list columns?filter(item -> item.isVisible) as column>
   /**
    * ${column.columnComment}
    */
-  ${column.javaField}?: <#if column.javaField?contains("id") || column.javaField?contains("Id")>string | number<#elseif column.javaType == 'Long' || column.javaType == 'Integer' || column.javaType == 'Double' || column.javaType == 'Float' || column.javaType == 'BigDecimal'>number<#elseif column.javaType == 'Boolean'>boolean<#else>string</#if>;
-  </#if>
+  ${column.javaField}?: ${column.javaType.tsType}
 </#list>
 }
 
-export interface ${className}Query <#if !treeCode?has_content>extends PageQuery</#if> {
-<#list columns as column>
-  <#if column.isQuery>
+export interface ${className}Query <#if !isTree>extends PageQuery</#if> {
+<#list columns?filter(item -> item.isQuery) as column>
   /**
    * ${column.columnComment}
    */
-  ${column.javaField}?: <#if column.javaField?contains("id") || column.javaField?contains("Id")>string | number<#elseif column.javaType == 'Long' || column.javaType == 'Integer' || column.javaType == 'Double' || column.javaType == 'Float' || column.javaType == 'BigDecimal'>number<#elseif column.javaType == 'Boolean'>boolean<#else>string</#if>;
-  </#if>
+    <#if column.queryType=="IN">
+  ${column.javaField}?: ${column.javaType.tsType}[]
+    <#elseif column.queryType=="BETWEEN">
+  ${column.javaField}Start?: ${column.javaType.tsType}
+  ${column.javaField}End?: ${column.javaType.tsType}
+    <#else>
+  ${column.javaField}?: ${column.javaType.tsType}
+    </#if>
 </#list>
-  /**
-   * 日期范围参数
-   */
-  params?: any;
 }

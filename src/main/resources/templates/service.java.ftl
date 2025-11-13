@@ -1,7 +1,7 @@
 package cn.sijay.egg.${moduleName}.service;
 
 import cn.sijay.egg.core.base.BaseService;
-<#if isTree>
+<#if !isTree>
 import cn.sijay.egg.core.records.PageQuery;
 import com.mybatisflex.core.paginate.Page;
 </#if>
@@ -33,7 +33,7 @@ import static cn.sijay.egg.${moduleName}.entity.table.${className}TableDef.${tab
 @Service
 public class ${className}Service extends BaseService<${className}Mapper, ${className}> {
 
-<#if isTree>
+<#if !isTree>
     /**
      * 分页查询${classComment}列表
      *

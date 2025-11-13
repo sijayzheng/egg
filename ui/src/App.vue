@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import HelloWorld from './components/HelloWorld.vue'
+import HighLight from './components/highLight.vue'
 </script>
 
 <template>
@@ -11,7 +11,7 @@ import HelloWorld from './components/HelloWorld.vue'
       <img alt="Vue logo" class="logo vue" src="./assets/vue.svg"/>
     </a>
   </div>
-  <HelloWorld msg="Vite + Vue"/>
+  <high-light/>
 </template>
 
 <style scoped>
